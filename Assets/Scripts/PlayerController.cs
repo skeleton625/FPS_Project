@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private PlayerCameraBehaviour CameraBehaviour = null;
     [SerializeField] private PlayerMovementBehaviour MovementBehaviour = null;
 
+    private bool isAiming = false;
     private Vector2 inputTurn = Vector2.zero;
     private Vector3 inputMovement = Vector3.zero;
 
@@ -35,17 +36,19 @@ public class PlayerController : MonoBehaviour
     {
         if(value.started)
         {
-            CameraBehaviour.UpdateAimingState(true);
+            isAiming = true;
+            CameraBehaviour.UpdateAimingState(isAiming);
         }
         if(value.canceled)
         {
-            CameraBehaviour.UpdateAimingState(false);
+            isAiming = false;
+            CameraBehaviour.UpdateAimingState(isAiming);
         }
     }
 
     public void OnAimingShift(InputContext value)
     {
-        if (value.started)
+        if (isAiming && value.started)
         {
             CameraBehaviour.UpdateAimingPosition();
         }
