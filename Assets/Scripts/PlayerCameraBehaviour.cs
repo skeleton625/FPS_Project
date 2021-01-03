@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class PlayerCameraBehaviour : MonoBehaviour
 {
+    [SerializeField] private float ZoomSensitive = .05f;
     [SerializeField] private float RotateSensitive = 5f;
     [SerializeField] private Transform ZoomTransform = null;
     [SerializeField] private Transform CameraTransform = null;
@@ -104,9 +105,9 @@ public class PlayerCameraBehaviour : MonoBehaviour
         }
 
         var distMagnitude = Vector3.SqrMagnitude(targetTransform.localPosition - CameraTransform.localPosition);
-        while (distMagnitude > 1f)
+        while (distMagnitude > ZoomSensitive)
         {
-            CameraTransform.localPosition = Vector3.Slerp(CameraTransform.localPosition, targetTransform.localPosition, .07f);
+            CameraTransform.localPosition = Vector3.Slerp(CameraTransform.localPosition, targetTransform.localPosition, ZoomSensitive);
             distMagnitude = Vector3.SqrMagnitude(targetTransform.localPosition - CameraTransform.localPosition);
             yield return null;
         }

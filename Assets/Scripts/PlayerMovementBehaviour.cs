@@ -1,10 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlayerMovementBehaviour : MonoBehaviour
 {
     [SerializeField] private float MoveSpeed = 5f;
+    [SerializeField] private float TurnSpeed = .01f;
+    [SerializeField] private Transform ModelTransform = null;
     [SerializeField] private Rigidbody PlayerRigidbody = null;
 
     private Camera mainCamera = null;
@@ -19,6 +19,7 @@ public class PlayerMovementBehaviour : MonoBehaviour
     private void FixedUpdate()
     {
         MoveThePlayer();
+        TurnThePlayer();
     }
 
     public void UpdateTurnDirection(Vector2 newTurnDriection)
@@ -39,7 +40,12 @@ public class PlayerMovementBehaviour : MonoBehaviour
 
     private void TurnThePlayer()
     {
-
+        if(playerMoveDirection.sqrMagnitude > .01f)
+        {
+            var lookRotation = Quaternion.LookRotation(CalculateCameraDirection(playerMoveDirection));
+            var rotation = Quaternion.Slerp(ModelTransform.rotation, lookRotation, TurnSpeed);
+            ModelTransform.rotation = rotation;
+        }
     }
 
     private Vector3 CalculateCameraDirection(Vector3 moveDirection)
