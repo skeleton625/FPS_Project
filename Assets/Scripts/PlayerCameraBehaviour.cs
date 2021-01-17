@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class PlayerCameraBehaviour : MonoBehaviour
 {
+    [SerializeField] private float ZoomLimit = 0f;
     [SerializeField] private float ZoomSensitive = .05f;
     [SerializeField] private float RotateSensitive = 5f;
     [SerializeField] private Transform ZoomTransform = null;
@@ -11,6 +12,8 @@ public class PlayerCameraBehaviour : MonoBehaviour
     [SerializeField] private Transform CameraBodyTransform = null;
 
     private bool isAiming = false;
+    private bool isShifted = false;
+
     private float aimingPosX = 0f;
     private float preRotateSensitive = 0f;
     private Vector3 rotateDirection = Vector3.zero;
@@ -46,13 +49,13 @@ public class PlayerCameraBehaviour : MonoBehaviour
         aimingZoomCoroutine = StartCoroutine(AimingZoomCoroutine());
     }
 
-    public void UpdateAimingPosition()
+    public void UpdateAimingPosition(bool isShifted)
     {
-        aimingPosX *= -1;
         if(aimingShiftCoroutine != null)
         {
             StopCoroutine(aimingShiftCoroutine);
         }
+        this.isShifted = isShifted;
         aimingShiftCoroutine = StartCoroutine(AimingShiftCoroutine());
     }
 
@@ -66,28 +69,30 @@ public class PlayerCameraBehaviour : MonoBehaviour
 
     private IEnumerator AimingShiftCoroutine()
     {
+        float preAimingPosX;
         var preCameraPos = CameraBodyTransform.localPosition;
-
-        if(aimingPosX > 0)
+        if (isShifted)
         {
-            while(preCameraPos.x < aimingPosX)
+            preAimingPosX = aimingPosX * -1;
+            while (preCameraPos.x > preAimingPosX)
             {
-                preCameraPos.x = Mathf.Lerp(preCameraPos.x, aimingPosX, .1f);
+                preCameraPos.x = Mathf.Lerp(preCameraPos.x, preAimingPosX, .1f);
                 CameraBodyTransform.localPosition = preCameraPos;
                 yield return null;
             }
         }
         else
         {
-            while(preCameraPos.x > aimingPosX)
+            preAimingPosX = aimingPosX;
+            while (preCameraPos.x < preAimingPosX)
             {
-                preCameraPos.x = Mathf.Lerp(preCameraPos.x, aimingPosX, .1f);
+                preCameraPos.x = Mathf.Lerp(preCameraPos.x, preAimingPosX, .1f);
                 CameraBodyTransform.localPosition = preCameraPos;
                 yield return null;
             }
         }
 
-        preCameraPos.x = aimingPosX;
+        preCameraPos.x = preAimingPosX;
         CameraBodyTransform.localPosition = preCameraPos;
         yield return null;
     }
@@ -104,15 +109,15 @@ public class PlayerCameraBehaviour : MonoBehaviour
             targetTransform = NormalTransform;
         }
 
-        var distMagnitude = Vector3.SqrMagnitude(targetTransform.localPosition - CameraTransform.localPosition);
-        while (distMagnitude > ZoomSensitive)
+        var distMagnitude = Vector3.SqrMagnitude(targetTransform.position - CameraTransform.position);
+        while (distMagnitude > ZoomLimit)
         {
-            CameraTransform.localPosition = Vector3.Slerp(CameraTransform.localPosition, targetTransform.localPosition, ZoomSensitive);
-            distMagnitude = Vector3.SqrMagnitude(targetTransform.localPosition - CameraTransform.localPosition);
+            CameraTransform.position = Vector3.Slerp(CameraTransform.position, targetTransform.position, ZoomSensitive);
+            distMagnitude = Vector3.SqrMagnitude(targetTransform.position - CameraTransform.position);
             yield return null;
         }
 
-        CameraTransform.localPosition = targetTransform.localPosition;
+        CameraTransform.position = targetTransform.position;
         yield return null;
     }
 }
